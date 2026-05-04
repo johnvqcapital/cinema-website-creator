@@ -43,6 +43,22 @@
       "id": "0f207d9e-da93-4149-8360-930e245880b3",
       "status": "SUCCEEDED",
       "videoUrl": "videos/buildforge/frame-06-forge-your-new-venture-here.mp4"
+    },
+    {
+      "frame": 7,
+      "title": "John's Twin",
+      "id": "john-twin",
+      "status": "SUCCEEDED",
+      "videoUrl": "videos/john/anime-hero.mp4",
+      "stillUrl": "images/john-twin-still.jpg"
+    },
+    {
+      "frame": 8,
+      "title": "Praveen's Twin",
+      "id": "praveen-twin",
+      "status": "SUCCEEDED",
+      "videoUrl": "videos/praveen/anime-hero.mp4",
+      "stillUrl": "images/praveen-still.jpg"
     }
   ]
 }

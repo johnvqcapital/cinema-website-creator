@@ -48,6 +48,25 @@ button{cursor:pointer}
 .readiness-panel{position:absolute;z-index:30;left:24px;bottom:24px;width:min(560px,calc(100vw - 48px));max-height:min(620px,74vh);display:none;grid-template-rows:auto 1fr;border:1px solid var(--line);border-radius:14px;background:rgba(3,4,5,.88);backdrop-filter:blur(24px);box-shadow:0 28px 90px rgba(0,0,0,.62);overflow:hidden}.readiness-panel.open{display:grid}.readiness-body{overflow:auto;padding:14px;display:grid;gap:12px}.readiness-row{border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.04);padding:12px;display:grid;gap:8px}.readiness-title{display:flex;align-items:center;justify-content:space-between;gap:10px}.readiness-title b{font-size:12px}.readiness-pill{border:1px solid var(--line);border-radius:999px;padding:5px 8px;font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase}.readiness-pill.ready{border-color:rgba(87,214,141,.55);color:#57d68d}.readiness-pill.watch{border-color:rgba(244,184,74,.6);color:var(--gold)}.readiness-row p{margin:0;color:var(--muted);font-size:12px;line-height:1.4}.readiness-checks{display:grid;grid-template-columns:1fr 1fr;gap:6px}.readiness-checks span{color:var(--dim);font-size:11px;line-height:1.3}.readiness-checks strong{color:var(--ink);font-weight:800}
 .toast{position:absolute;left:50%;top:22px;transform:translateX(-50%);z-index:40;border:1px solid var(--line);border-radius:999px;background:rgba(0,0,0,.52);backdrop-filter:blur(16px);padding:10px 14px;color:var(--ink);font-size:12px;opacity:0;transition:.2s}.toast.show{opacity:1}
 @media(max-width:900px){.app{grid-template-columns:1fr}.hero{bottom:110px}.hero h2{font-size:54px}.runway-panel,.contact-panel,.readiness-panel{left:12px;right:12px;bottom:82px;width:auto}.field-grid,.readiness-checks{grid-template-columns:1fr}.page-cue{right:14px}.swipe-hint{font-size:9px}}
+
+  /* === Twin slides + dynamic carousel patch === */
+  .shatter { position: absolute; inset: 0; z-index: 2; pointer-events: none; overflow: hidden; }
+  .shatter .shard { position: absolute; inset: 0; background-size: cover; background-position: center; transform: translate3d(0,0,0) rotate(0); opacity: 1; will-change: transform, opacity; }
+  .screen.active .shatter .shard { animation: shard-shatter 2.0s cubic-bezier(.62,.04,.36,1) 0.45s forwards; }
+  @keyframes shard-shatter {
+    0% { transform: translate3d(0,0,0) rotate(0); opacity: 1; }
+    55% { opacity: 1; }
+    100% { transform: translate3d(calc(var(--tx,0) * 1px), calc(var(--ty,0) * 1px), 0) rotate(calc(var(--rot,0) * 1deg)); opacity: 0; }
+  }
+  .cta-row { margin-top: 22px; display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+  .cta { display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; font-size: 13px; font-weight: 600; letter-spacing: .02em; text-decoration: none; border-radius: 999px; transition: transform .2s, box-shadow .2s, background .2s; white-space: nowrap; cursor: pointer; border: 0; font-family: inherit; }
+  .cta--primary { background: var(--gold); color: #1b1409; }
+  .cta--primary:hover { transform: translateY(-1px); box-shadow: 0 12px 36px -10px rgba(244,184,74,.6); }
+  .screen .twin-video { z-index: 1; }
+  @media (prefers-reduced-motion: reduce) {
+    .screen.active .shatter .shard { animation: shard-fade .5s .2s forwards; }
+    @keyframes shard-fade { to { opacity: 0; } }
+  }
 </style>
 </head>
 <body>
@@ -67,10 +86,40 @@ button{cursor:pointer}
       <div class="key-row"><input id="runwayKey" type="password" autocomplete="off" spellcheck="false" placeholder="Runway API key for automatic queue"><button class="ghost" type="button" id="runWithKey">Run with key</button></div>
       <div class="actions"><button class="ghost" type="button" id="useClaude">Use Claude output</button><button class="ghost" type="button" id="clearClaude">Clear</button></div>
     </section>
-    <section class="frames" id="frames" aria-label="Six generated frames"></section>
+    <section class="frames" id="frames" aria-label="Six generated frames">
+  <button type="button" class="frame-card" data-task-id="john-twin"><small>Live now</small><b>7. John's Twin</b><span>The version of you that doesn't sleep — reviews PRDs, scores strategies, ships decisions while you sleep.</span></button>
+  <button type="button" class="frame-card" data-task-id="praveen-twin"><small>Live now</small><b>8. Praveen's Twin</b><span>Praveen's anime hero shatters into the digital twin auditing systems and reviewing diffs while the team sleeps.</span></button>
+</section>
     <div class="workflow-foot">Paste any company URL. The app infers a brand/category, extracts six cinematic themes, plays default videos immediately, and queues Runway prompts for the final videos.</div>
   </aside>
-  <section class="stage" id="stage" aria-label="Cinema preview"></section>
+  <section class="stage" id="stage" aria-label="Cinema preview">
+  <article class="screen john-twin" data-frame="7" data-task-id="john-twin">
+    <video class="twin-video" src="videos/john/anime-hero.mp4" autoplay muted loop playsinline preload="auto" poster="images/john-twin-still.jpg"></video>
+    <div class="shatter" data-still="images/john-twin-still.jpg" aria-hidden="true"></div>
+    <div class="scrim"></div>
+    <div class="hero">
+      <div class="eyebrow">Digital Twin · John Kim</div>
+      <h2>The version of you that doesn't sleep.</h2>
+      <p>Trained on the way you think. Reviews PRDs, scores strategies, accelerates the decisions that used to wait on your calendar. One you, working in parallel.</p>
+      <div class="cta-row">
+        <button class="cta cta--primary" data-cta="twin" data-intent="I want to talk about John's digital twin — reviewing strategies and PRDs in parallel.">Meet your twin <span aria-hidden="true">→</span></button>
+      </div>
+    </div>
+  </article>
+  <article class="screen praveen-twin" data-frame="8" data-task-id="praveen-twin">
+    <video class="twin-video" src="videos/praveen/anime-hero.mp4" autoplay muted loop playsinline preload="auto" poster="images/praveen-still.jpg"></video>
+    <div class="shatter" data-still="images/praveen-still.jpg" aria-hidden="true"></div>
+    <div class="scrim"></div>
+    <div class="hero">
+      <div class="eyebrow">Digital Twin · Praveen Hirsave</div>
+      <h2>The CTO who never logs off.</h2>
+      <p>Trained on how Praveen architects, codes, and ships. Reviews systems, audits diffs, accelerates builds — while the team sleeps.</p>
+      <div class="cta-row">
+        <button class="cta cta--primary" data-cta="twin" data-intent="I want to talk about Praveen's digital twin — auditing systems and reviewing diffs in parallel.">Meet Praveen's twin <span aria-hidden="true">→</span></button>
+      </div>
+    </div>
+  </article>
+</section>
   <nav class="transport" aria-label="Frame navigation"><button class="icon" id="prev" type="button">‹</button><div class="count" id="count">1/6</div><button class="icon" id="next" type="button">›</button><button class="ghost" id="readiness" type="button">Readiness</button><button class="ghost" id="contact" type="button">Contact Us</button></nav>
   <section class="readiness-panel" id="readinessPanel" aria-label="BuildForge readiness">
     <div class="panel-head"><h3>BuildForge readiness</h3><button class="icon" id="closeReadiness" type="button">×</button></div>
@@ -226,6 +275,113 @@ window.addEventListener("online",()=>{notify("Back online; checking Runway");res
 const params=new URLSearchParams(location.search),initial=params.get("prompt")||params.get("url")||"buildforge.ai + medieval Four Forges business venture cinema: build, sell, operate, fund, transform";
 brief.value=initial;create(initial);
 loadReadiness();
+
+// === Twin slides + dynamic carousel patch ===
+(() => {
+  const $ = (s, r=document) => r.querySelector(s);
+  const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+  const screens = () => $$('#stage .screen');
+  const cards = () => $$('#frames .frame-card');
+  const curIdx = () => Math.max(0, screens().findIndex(s => s.classList.contains('active')));
+  function go(to) {
+    const ss = screens(), cc = cards(), n = ss.length;
+    if (!n) return;
+    const i = ((to % n) + n) % n;
+    ss.forEach((s, k) => s.classList.toggle('active', k === i));
+    cc.forEach((c, k) => c.classList.toggle('active', k === i));
+    const cE = $('#count'); if (cE) cE.textContent = (i+1) + '/' + n;
+    ss.forEach((s, k) => { const v = s.querySelector('video'); if (!v) return;
+      try { if (k === i) { v.currentTime = 0; v.play().catch(()=>{}); } else v.pause(); } catch(e){} });
+  }
+  function rebind() {
+    const p = $('#prev'), nx = $('#next');
+    if (p && !p.dataset.dynBound) { const np = p.cloneNode(true); np.dataset.dynBound='1'; p.replaceWith(np); np.addEventListener('click', ()=>go(curIdx()-1)); }
+    if (nx && !nx.dataset.dynBound) { const nn = nx.cloneNode(true); nn.dataset.dynBound='1'; nx.replaceWith(nn); nn.addEventListener('click', ()=>go(curIdx()+1)); }
+    cards().forEach(c => { if (c.dataset.dynBound) return;
+      const nc = c.cloneNode(true); nc.dataset.dynBound='1';
+      c.replaceWith(nc); nc.addEventListener('click', ()=>go(cards().indexOf(nc))); });
+  }
+  if (!window.__dynKey) { window.__dynKey = true;
+    window.addEventListener('keydown', e => {
+      if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+      if (e.key==='ArrowRight'){ go(curIdx()+1); e.stopImmediatePropagation(); }
+      else if (e.key==='ArrowLeft'){ go(curIdx()-1); e.stopImmediatePropagation(); }
+    }, true);
+  }
+  if (!window.__dynObs) { window.__dynObs = new MutationObserver(()=>rebind());
+    if ($('#stage')) window.__dynObs.observe($('#stage'), {childList:true});
+    if ($('#frames')) window.__dynObs.observe($('#frames'), {childList:true});
+  }
+  function init(){ rebind(); go(curIdx()); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else setTimeout(init, 50);
+})();
+
+(function bootShatter(){
+  const SHARDS = [
+    [[[0,0],[35,0],[30,18],[10,22],[0,15]],[-180,-180,-8]],
+    [[[35,0],[62,0],[58,15],[42,22],[30,18]],[0,-200,5]],
+    [[[62,0],[100,0],[100,12],[82,18],[58,15]],[180,-200,-6]],
+    [[[100,12],[100,38],[78,32],[82,18]],[230,-110,9]],
+    [[[0,15],[10,22],[18,38],[0,42]],[-230,-70,-10]],
+    [[[30,18],[42,22],[48,40],[35,45],[18,38],[10,22]],[-110,-110,4]],
+    [[[42,22],[58,15],[82,18],[78,32],[68,42],[48,40]],[80,-100,-7]],
+    [[[100,38],[100,68],[82,62],[78,55],[78,32]],[230,0,8]],
+    [[[0,42],[18,38],[35,45],[28,62],[12,68],[0,55]],[-230,0,-5]],
+    [[[35,45],[48,40],[68,42],[62,58],[52,68],[28,62]],[0,55,6]],
+    [[[68,42],[78,55],[82,62],[72,75],[62,58]],[150,55,-8]],
+    [[[100,68],[100,100],[68,100],[62,82],[72,75],[82,62]],[200,200,7]],
+    [[[0,55],[12,68],[28,62],[52,68],[48,90],[20,95],[0,80]],[-200,180,-9]],
+    [[[28,62],[62,58],[62,82],[68,100],[48,90],[52,68]],[0,200,5]],
+    [[[62,82],[72,75],[62,100],[48,90]],[70,230,-6]],
+    [[[20,95],[48,90],[62,100],[20,100],[0,100],[0,80]],[-150,230,8]]
+  ];
+  function build(host){
+    if (host.dataset.shatterBuilt) return;
+    host.dataset.shatterBuilt = '1';
+    const still = host.dataset.still; if (!still) return;
+    const frag = document.createDocumentFragment();
+    SHARDS.forEach(arr => {
+      const poly = arr[0], tx = arr[1][0], ty = arr[1][1], rot = arr[1][2];
+      const d = document.createElement('div');
+      d.className = 'shard';
+      const pts = poly.map(p => p[0]+'% '+p[1]+'%').join(',');
+      d.style.cssText = 'background-image:url("'+still+'");clip-path:polygon('+pts+');-webkit-clip-path:polygon('+pts+');--tx:'+tx+';--ty:'+ty+';--rot:'+rot+';';
+      frag.appendChild(d);
+    });
+    host.appendChild(frag);
+  }
+  function scan(r){ (r||document).querySelectorAll('.shatter[data-still]').forEach(build); }
+  function init(){ scan();
+    if (!window.__shatterObs) { window.__shatterObs = new MutationObserver(ms => ms.forEach(m => m.addedNodes.forEach(n => {
+      if (n.nodeType !== 1) return;
+      if (n.classList && n.classList.contains('shatter')) build(n);
+      scan(n);
+    })));
+      window.__shatterObs.observe(document.body, {childList:true, subtree:true});
+    }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-cta="twin"]');
+  if (!t) return;
+  e.preventDefault();
+  const live = t.dataset.href;
+  if (live) { window.open(live, '_blank', 'noopener'); return; }
+  const cb = document.querySelector('#contact');
+  if (cb) cb.click();
+  setTimeout(() => {
+    const ta = document.querySelector('#contactMessage');
+    if (ta && !ta.value) {
+      ta.value = t.dataset.intent || 'I want to talk about a digital twin.';
+      ta.dispatchEvent(new Event('input', { bubbles: true }));
+      ta.focus();
+    }
+  }, 80);
+});
 </script>
 </body>
 </html>

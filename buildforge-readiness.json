@@ -1,0 +1,67 @@
+{
+  "lanes": {
+    "3_local_coding_model": {
+      "checks": {
+        "execution_bridge_integrated": true,
+        "ollama_available": false,
+        "ollama_permission_limited": true,
+        "preferred_installed": false,
+        "preferred_model": "qwen2.5-coder:14b",
+        "stream_llm_integrated": true
+      },
+      "goal": "Use a local open-source coding lane before paid API keys are required.",
+      "next": [
+        "Expose model lane labels in the desktop UI.",
+        "Add one-click local lane smoke test.",
+        "Keep API model fallback for ambiguous or high-risk tasks."
+      ],
+      "status": "needs_runtime_permission"
+    },
+    "4_journey_kits": {
+      "checks": {
+        "helper_exists": true,
+        "integration_note_exists": true,
+        "ops_workflow_contracts": 1,
+        "ops_workflow_contracts_invalid": 0,
+        "ops_workflow_contracts_valid": 1,
+        "ops_workflow_status_json_within_budget": true,
+        "venture_slots_exist": true
+      },
+      "goal": "Use Journey Kits as inspectable workflow packs, not auto-installed code.",
+      "next": [
+        "Render Ops Workflow readiness in the product surface.",
+        "Keep ops workflow execution dry-run only until local-write semantics are approved.",
+        "Add Journey Kit contract validation before visual-builder work."
+      ],
+      "status": "ready"
+    },
+    "5_productized_demo": {
+      "checks": {
+        "app_manifest_status_json_within_budget": true,
+        "app_manifests": 1,
+        "app_manifests_invalid": 0,
+        "app_manifests_valid": 1,
+        "domain_runbook_exists": true,
+        "public_site_exists": true,
+        "venture_harness_exists": true,
+        "venture_runs": 1
+      },
+      "goal": "Turn the demo into a product surface with run history and exports.",
+      "next": [
+        "Render Product App manifest readiness in the product surface.",
+        "Keep API exposure set to none until auth, cost, and logging gates are approved.",
+        "Consolidate stage artifacts into export bundles."
+      ],
+      "status": "ready"
+    }
+  },
+  "schema": "buildforge.upgrade_3_5.v1",
+  "venture_runs": [
+    {
+      "name": "BuildForge Venture Platform",
+      "path": ".buildforge/venture-runs/buildforge-venture-platform-20260502154503",
+      "run_id": "buildforge-venture-platform-20260502154503",
+      "status": "scaffolded"
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "host": "buildforge.ai",
+  "prompt": "buildforge.ai + medieval Four Forges business venture cinema: build, sell, operate, fund, transform",
+  "tasks": [
+    {
+      "frame": 1,
+      "title": "Build Forge",
+      "id": "6cd84234-a71b-4052-9417-653de1ab857a",
+      "status": "SUCCEEDED",
+      "videoUrl": "videos/buildforge/frame-01-build-forge.mp4"
+    },
+    {
+      "frame": 2,
+      "title": "Sell Forge",
+      "id": "4f65db4a-5e9c-48dd-9d30-30869bf1c13c",
+      "status": "SUCCEEDED",
+      "videoUrl": "videos/buildforge/frame-02-sell-forge.mp4"
+    },
+    {
+      "frame": 3,
+      "title": "Operate Forge",
+      "id": "0c2042ce-2bae-4d31-9150-b1dfbc8405c7",
+      "status": "SUCCEEDED",
+      "videoUrl": "videos/buildforge/frame-03-operate-forge.mp4"
+    },
+    {
+      "frame": 4,
+      "title": "Fund Forge",
+      "id": "c4d7e8e5-9fd1-4636-8a2b-19451f9ec229",
+      "status": "SUCCEEDED",
+      "videoUrl": "videos/buildforge/frame-04-fund-forge.mp4"
+    },
+    {
+      "frame": 5,
+      "title": "Transform Forge",
+      "id": "812ecbba-7966-44de-8690-f0d44fd3875b",
+      "status": "SUCCEEDED",
+      "videoUrl": "videos/buildforge/frame-05-transform-forge.mp4"
+    },
+    {
+      "frame": 6,
+      "title": "Forge Your New Venture Here",
+      "id": "0f207d9e-da93-4149-8360-930e245880b3",
+      "status": "SUCCEEDED",
+      "videoUrl": "videos/buildforge/frame-06-forge-your-new-venture-here.mp4"
+    }
+  ]
+}

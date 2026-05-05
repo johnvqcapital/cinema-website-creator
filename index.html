@@ -276,11 +276,14 @@ const params=new URLSearchParams(location.search),initial=params.get("prompt")||
 brief.value=initial;create(initial);
 loadReadiness();
 
-// === Twin slides self-healing injector ===
-// render() wipes #stage and #frames on every call (initial create() and any re-render
-// from loadTaskManifest's `if(changed){render()}`). Without this injector, the static
-// twin markup vanishes within ~1ms of page load and slides 7/8 are unreachable.
-// This re-adds them after every wipe, idempotently, via MutationObserver.
+// === Twin slides self-healing injector + nav fix (v2) ===
+// render() wipes #stage and #frames on every call (initial create() and any re-render from
+// loadTaskManifest). It also: (a) sets count to "x/6" via hardcoded frames.length, (b) creates
+// only 6 page-dots, and (c) wires dot/swipe/wheel handlers to a show() that's hardcoded to
+// cycle 0–5. Without this block, slides 7/8 are unreachable and the counter reads "x/6".
+//
+// This: re-injects twin slides + cards, re-injects 2 page-dots, rebinds dots+swipe+wheel to a
+// DOM-aware goTo(), and watches #count for show()-style resets and corrects them.
 (() => {
   const TWIN_SLIDES = `
   <article class="screen john-twin" data-frame="7" data-task-id="john-twin">
@@ -313,24 +316,122 @@ loadReadiness();
   <button type="button" class="frame-card" data-task-id="john-twin"><small>Live now</small><b>7. John's Twin</b><span>The version of you that doesn't sleep — reviews PRDs, scores strategies, ships decisions while you sleep.</span></button>
   <button type="button" class="frame-card" data-task-id="praveen-twin"><small>Live now</small><b>8. Praveen's Twin</b><span>Praveen's anime hero shatters into the digital twin auditing systems and reviewing diffs while the team sleeps.</span></button>`;
 
-  const stageEl = document.querySelector('#stage');
-  const framesElLocal = document.querySelector('#frames');
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+  const screens = () => $$('#stage .screen');
+  const cards = () => $$('#frames .frame-card');
+  const dots = () => $$('#pageDots .page-dot');
+  const activeIdx = () => Math.max(0, screens().findIndex((s) => s.classList.contains('active')));
+
+  function goTo(target) {
+    const ss = screens(), n = ss.length;
+    if (n === 0) return;
+    const i = ((target % n) + n) % n;
+    ss.forEach((s, k) => s.classList.toggle('active', k === i));
+    cards().forEach((c, k) => c.classList.toggle('active', k === i));
+    dots().forEach((d, k) => d.classList.toggle('active', k === i));
+    const c = $('#count'); if (c) c.textContent = (i + 1) + '/' + n;
+    ss.forEach((s, k) => {
+      const v = s.querySelector('video'); if (!v) return;
+      try { if (k === i) { v.currentTime = 0; v.play().catch(() => {}); } else v.pause(); } catch (e) {}
+    });
+  }
+
+  function syncDots() {
+    const dotsEl = $('#pageDots'); if (!dotsEl) return;
+    const want = screens().length;
+    // Add missing dots
+    while (dotsEl.children.length < want) {
+      const i = dotsEl.children.length;
+      const dot = document.createElement('button');
+      dot.type = 'button';
+      dot.className = 'page-dot';
+      dot.setAttribute('aria-label', 'Go to frame ' + (i + 1));
+      dot.dataset.twinBound = '1';
+      dot.addEventListener('click', () => goTo(i));
+      dotsEl.appendChild(dot);
+    }
+    // Rebind existing dots (the ones render() created with show() handlers) to goTo
+    Array.from(dotsEl.children).forEach((dot, i) => {
+      if (dot.dataset.twinBound) return;
+      const fresh = dot.cloneNode(true); // strips show() listener
+      fresh.dataset.twinBound = '1';
+      fresh.addEventListener('click', () => goTo(i));
+      dot.replaceWith(fresh);
+    });
+  }
+
+  function syncCount() {
+    const c = $('#count'); const ss = screens();
+    if (!c || ss.length === 0) return;
+    const want = (activeIdx() + 1) + '/' + ss.length;
+    if (c.textContent !== want) c.textContent = want;
+  }
 
   function ensureTwins() {
+    const stageEl = $('#stage'), framesElLocal = $('#frames');
     if (stageEl && !stageEl.querySelector('[data-task-id="john-twin"]')) {
       stageEl.insertAdjacentHTML('beforeend', TWIN_SLIDES);
     }
     if (framesElLocal && !framesElLocal.querySelector('[data-task-id="john-twin"]')) {
       framesElLocal.insertAdjacentHTML('beforeend', TWIN_CARDS);
     }
+    syncDots();
+    syncCount();
   }
 
   ensureTwins();
 
+  // 1. Heal twins + dots + count after every render() wipe
   if (!window.__twinHealObs) {
     window.__twinHealObs = new MutationObserver(() => ensureTwins());
+    const stageEl = $('#stage'), framesElLocal = $('#frames'), dotsEl = $('#pageDots');
     if (stageEl) window.__twinHealObs.observe(stageEl, { childList: true });
     if (framesElLocal) window.__twinHealObs.observe(framesElLocal, { childList: true });
+    if (dotsEl) window.__twinHealObs.observe(dotsEl, { childList: true });
+  }
+
+  // 2. Catch show() resetting count to "x/6" via direct .textContent writes (dot/swipe/wheel)
+  if (!window.__twinCountObs) {
+    const c = $('#count');
+    if (c) {
+      window.__twinCountObs = new MutationObserver(() => {
+        const ss = screens(); if (ss.length === 0) return;
+        const i = activeIdx();
+        const want = (i + 1) + '/' + ss.length;
+        if (c.textContent !== want) {
+          window.__twinCountObs.disconnect();
+          c.textContent = want;
+          window.__twinCountObs.observe(c, { characterData: true, childList: true, subtree: true });
+        }
+        // Sync dot indicator to active screen (covers arrow-key nav, where the dynamic
+        // carousel's go() updates count but not dots).
+        dots().forEach((d, k) => d.classList.toggle('active', k === i));
+      });
+      window.__twinCountObs.observe(c, { characterData: true, childList: true, subtree: true });
+    }
+  }
+
+  // 3. Override stage swipe/wheel via capture phase (the original handlers call show() which
+  //    cycles only 0–5; capture+stopImmediatePropagation pre-empts them with goTo).
+  const stage = $('#stage');
+  if (stage && !window.__twinNavBound) {
+    window.__twinNavBound = true;
+    let touchY = 0, touchX = 0;
+    stage.addEventListener('pointerdown', (e) => { touchY = e.clientY; touchX = e.clientX; }, true);
+    stage.addEventListener('pointerup', (e) => {
+      const dy = e.clientY - touchY, dx = e.clientX - touchX;
+      if (Math.abs(dy) > 60 && Math.abs(dy) > Math.abs(dx)) {
+        goTo(activeIdx() + (dy < 0 ? 1 : -1));
+        e.stopImmediatePropagation();
+      }
+    }, true);
+    stage.addEventListener('wheel', (e) => {
+      if (Math.abs(e.deltaY) > 38) {
+        goTo(activeIdx() + (e.deltaY > 0 ? 1 : -1));
+        e.stopImmediatePropagation();
+      }
+    }, { capture: true, passive: true });
   }
 })();
 

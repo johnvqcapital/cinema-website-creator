@@ -276,6 +276,64 @@ const params=new URLSearchParams(location.search),initial=params.get("prompt")||
 brief.value=initial;create(initial);
 loadReadiness();
 
+// === Twin slides self-healing injector ===
+// render() wipes #stage and #frames on every call (initial create() and any re-render
+// from loadTaskManifest's `if(changed){render()}`). Without this injector, the static
+// twin markup vanishes within ~1ms of page load and slides 7/8 are unreachable.
+// This re-adds them after every wipe, idempotently, via MutationObserver.
+(() => {
+  const TWIN_SLIDES = `
+  <article class="screen john-twin" data-frame="7" data-task-id="john-twin">
+    <video class="twin-video" src="videos/john/anime-hero.mp4" autoplay muted loop playsinline preload="auto" poster="images/john-twin-still.jpg"></video>
+    <div class="shatter" data-still="images/john-twin-still.jpg" aria-hidden="true"></div>
+    <div class="scrim"></div>
+    <div class="hero">
+      <div class="eyebrow">Digital Twin · John Kim</div>
+      <h2>The version of you that doesn't sleep.</h2>
+      <p>Trained on the way you think. Reviews PRDs, scores strategies, accelerates the decisions that used to wait on your calendar. One you, working in parallel.</p>
+      <div class="cta-row">
+        <button class="cta cta--primary" data-cta="twin" data-intent="I want to talk about John's digital twin — reviewing strategies and PRDs in parallel.">Meet your twin <span aria-hidden="true">→</span></button>
+      </div>
+    </div>
+  </article>
+  <article class="screen praveen-twin" data-frame="8" data-task-id="praveen-twin">
+    <video class="twin-video" src="videos/praveen/anime-hero.mp4" autoplay muted loop playsinline preload="auto" poster="images/praveen-still.jpg"></video>
+    <div class="shatter" data-still="images/praveen-still.jpg" aria-hidden="true"></div>
+    <div class="scrim"></div>
+    <div class="hero">
+      <div class="eyebrow">Digital Twin · Praveen Hirsave</div>
+      <h2>The CTO who never logs off.</h2>
+      <p>Trained on how Praveen architects, codes, and ships. Reviews systems, audits diffs, accelerates builds — while the team sleeps.</p>
+      <div class="cta-row">
+        <button class="cta cta--primary" data-cta="twin" data-intent="I want to talk about Praveen's digital twin — auditing systems and reviewing diffs in parallel.">Meet Praveen's twin <span aria-hidden="true">→</span></button>
+      </div>
+    </div>
+  </article>`;
+  const TWIN_CARDS = `
+  <button type="button" class="frame-card" data-task-id="john-twin"><small>Live now</small><b>7. John's Twin</b><span>The version of you that doesn't sleep — reviews PRDs, scores strategies, ships decisions while you sleep.</span></button>
+  <button type="button" class="frame-card" data-task-id="praveen-twin"><small>Live now</small><b>8. Praveen's Twin</b><span>Praveen's anime hero shatters into the digital twin auditing systems and reviewing diffs while the team sleeps.</span></button>`;
+
+  const stageEl = document.querySelector('#stage');
+  const framesElLocal = document.querySelector('#frames');
+
+  function ensureTwins() {
+    if (stageEl && !stageEl.querySelector('[data-task-id="john-twin"]')) {
+      stageEl.insertAdjacentHTML('beforeend', TWIN_SLIDES);
+    }
+    if (framesElLocal && !framesElLocal.querySelector('[data-task-id="john-twin"]')) {
+      framesElLocal.insertAdjacentHTML('beforeend', TWIN_CARDS);
+    }
+  }
+
+  ensureTwins();
+
+  if (!window.__twinHealObs) {
+    window.__twinHealObs = new MutationObserver(() => ensureTwins());
+    if (stageEl) window.__twinHealObs.observe(stageEl, { childList: true });
+    if (framesElLocal) window.__twinHealObs.observe(framesElLocal, { childList: true });
+  }
+})();
+
 // === Twin slides + dynamic carousel patch ===
 (() => {
   const $ = (s, r=document) => r.querySelector(s);
